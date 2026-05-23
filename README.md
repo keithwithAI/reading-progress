@@ -1,4 +1,4 @@
-# Reading Progress
+# Note Reading Progress
 
 An Obsidian plugin that shows the remaining reading time and scroll progress for the current note. Works in **both edit mode and reading mode**, on desktop and mobile.
 
@@ -14,7 +14,7 @@ An Obsidian plugin that shows the remaining reading time and scroll progress for
 
 ## Mobile
 
-Obsidian hides the status bar on mobile by default. Reading Progress ships a `styles.css` that makes its own item visible as a pill near the bottom of the screen and (by default) hides the rest of the status bar so the pill stands alone.
+Obsidian hides the status bar on mobile by default. Note Reading Progress ships a `styles.css` that makes its own item visible as a pill near the bottom of the screen and (by default) hides the rest of the status bar so the pill stands alone.
 
 Both behaviors are controlled by settings:
 
@@ -34,7 +34,7 @@ If you want to restyle the pill, add a CSS snippet that targets `body.reading-pr
 
 ## Acknowledgements
 
-This plugin is a fork of [Remaining reading time](https://github.com/ununnamed/remaining-reading-time) by [ununnamed](https://github.com/ununnamed), MIT-licensed. Reading Progress adds reading-mode scroll support, a stable CSS class, in-plugin mobile styling, and other improvements.
+This plugin is a fork of [Remaining reading time](https://github.com/ununnamed/remaining-reading-time) by [ununnamed](https://github.com/ununnamed), MIT-licensed. Note Reading Progress adds reading-mode scroll support, a stable CSS class, in-plugin mobile styling, and other improvements.
 
 ## License
 

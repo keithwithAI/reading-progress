@@ -1,7 +1,7 @@
 {
 	"name": "note-reading-progress",
 	"author": "keithwithai",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Shows remaining reading time and scroll progress for the current note in both edit and reading modes.",
 	"main": "main.js",
 	"scripts": {
