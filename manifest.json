@@ -1,10 +1,10 @@
 {
-	"id": "remaining-reading-time",
-	"name": "Remaining reading time",
-	"description": "Shows the remaining reading time for the current note depending on the cursor position.",
-	"version": "1.8",
+	"id": "reading-progress",
+	"name": "Reading Progress",
+	"description": "Shows remaining reading time and scroll progress for the current note in both edit and reading modes.",
+	"version": "0.1.0",
 	"minAppVersion": "0.12.17",
 	"isDesktopOnly": false,
-	"author": "ununnamed",
-	"authorUrl": "https://github.com/ununnamed"
+	"author": "keithwithai",
+	"authorUrl": "https://github.com/keithwithai"
 }

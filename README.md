@@ -1,19 +1,32 @@
-# remaining-reading-time
+# Reading Progress
 
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/b62141c2-628a-4c50-95ed-6abdffed0ef2" />
+An Obsidian plugin that shows the remaining reading time and scroll progress for the current note. Works in **both edit mode and reading mode**, on desktop and mobile.
 
-Shows the remaining reading time and reading progress (%) in the Status Bar in real time.
+## Features
 
-# Differences from the Reading Time Plugin
+- Remaining reading time updates as you scroll
+- Works in **reading (preview) mode**, not just edit mode
+- Optional progress percentage
+- Multiple time formats (compact, simple, verbose, digital, default)
+- Configurable reading speed (words per minute)
+- Status bar item exposes a `.plugin-reading-progress` CSS class for easy styling
+- Mobile-friendly
 
-This plugin is based on great [reading-time plugin](https://github.com/avr/obsidian-reading-time), which focuses primarily on writing and helping users manage note length. While the underlying structure is similar, this version is designed for a different use case — reading.
-It estimates the time remaining to finish reading a text (such as articles, notes, or books), providing a smoother reading experience and helping users pace their reading sessions.
+## Mobile usage
 
-In short:
+The status bar is hidden by default on Obsidian mobile. To show the reading time pill on iOS/iPadOS/Android, add a CSS snippet via Settings → Appearance → CSS snippets. See `snippets.css` in this repo for an example styled like Note Toolbar's pill.
 
-[Reading Time Plugin](https://github.com/avr/obsidian-reading-time): Optimized for writing and keeping notes concise.
+## Settings
 
-This plugin: Optimized for reading and tracking reading progress/time left.
+- **Reading speed** — words per minute (default 300)
+- **Format** — how time is displayed
+- **Append text** — text appended after the time (default "left")
+- **Show reading progress percentage** — toggle to append `(NN%)` to the status
 
-# How to turn on Remaining reading time on Obsidian mobile
-[Animated instruction](https://github.com/ununnamed/remaining-reading-time/blob/main/MOBILE_VERSION.md)
+## Acknowledgements
+
+This plugin is a fork of [Remaining reading time](https://github.com/ununnamed/remaining-reading-time) by [ununnamed](https://github.com/ununnamed), MIT-licensed. Reading Progress adds reading-mode support, a stable CSS class for the status bar item, and other improvements.
+
+## License
+
+MIT — see `LICENSE`.

@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import ReadingTime from "./main";
+import ReadingProgress from "./main";
 
 export enum ReadingTimeFormat {
   Default = "default",
@@ -24,9 +24,9 @@ export const RT_DEFAULT_SETTINGS: ReadingTimeSettings = {
 };
 
 export class ReadingTimeSettingsTab extends PluginSettingTab {
-  plugin: ReadingTime;
+  plugin: ReadingProgress;
 
-  constructor(app: App, plugin: ReadingTime) {
+  constructor(app: App, plugin: ReadingProgress) {
     super(app, plugin);
     this.plugin = plugin;
   }

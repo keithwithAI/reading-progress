@@ -6,7 +6,7 @@ import {
 } from "./settings";
 import { readingTimeText } from "./helpers";
 
-export default class ReadingTime extends Plugin {
+export default class ReadingProgress extends Plugin {
   settings: ReadingTimeSettings;
   statusBar: HTMLElement;
 
@@ -14,6 +14,7 @@ export default class ReadingTime extends Plugin {
     await this.loadSettings();
 
     this.statusBar = this.addStatusBarItem();
+    this.statusBar.addClass("plugin-reading-progress");
     this.statusBar.setText("");
 
     this.addSettingTab(new ReadingTimeSettingsTab(this.app, this));
@@ -42,20 +43,16 @@ export default class ReadingTime extends Plugin {
       )
     );
 
-    // Update every half a second - update remaining reading time on scrolling
+    // Update every half a second - tracks scroll in both edit and reading modes
     let lastScrollTop: number | null = null;
     this.registerInterval(
       window.setInterval(() => {
         const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!mdView) return;
 
-        const editorEl =
-          mdView.contentEl.querySelector(".cm-scroller") ??
-          mdView.contentEl.querySelector(".markdown-source-view") ??
-          mdView.contentEl;
-
-        if (editorEl) {
-          const scrollTop = editorEl.scrollTop;
+        const scrollEl = this.getScrollEl(mdView);
+        if (scrollEl) {
+          const scrollTop = scrollEl.scrollTop;
           if (lastScrollTop === null || scrollTop !== lastScrollTop) {
             lastScrollTop = scrollTop;
             this.calculateReadingTime();
@@ -65,40 +62,53 @@ export default class ReadingTime extends Plugin {
     );
   }
 
-  calculateReadingTime = () => {
-    const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!mdView || !mdView.editor) {
-      this.statusBar.setText("0 min left");
-      return;
+  private getScrollEl(mdView: MarkdownView): Element | null {
+    const isPreview = mdView.getMode && mdView.getMode() === "preview";
+    if (isPreview) {
+      return (
+        mdView.contentEl.querySelector(".markdown-preview-view") ??
+        mdView.contentEl
+      );
     }
-
-    const editor = mdView.editor;
-    const editorEl =
+    return (
       mdView.contentEl.querySelector(".cm-scroller") ??
       mdView.contentEl.querySelector(".markdown-source-view") ??
-      mdView.contentEl;
+      mdView.contentEl
+    );
+  }
 
-    if (!editorEl) {
+  calculateReadingTime = () => {
+    const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!mdView) {
       this.statusBar.setText("0 min left");
       return;
     }
 
-    const scrollTop = editorEl.scrollTop;
-    const scrollHeight = editorEl.scrollHeight;
-    const clientHeight = editorEl.clientHeight;
+    const scrollEl = this.getScrollEl(mdView);
+    if (!scrollEl) {
+      this.statusBar.setText("0 min left");
+      return;
+    }
 
-    const scrollProgressRaw = (scrollTop / (scrollHeight - clientHeight)) * 100;
-	const scrollProgress = Math.min(100, parseFloat(scrollProgressRaw.toFixed(1)));
+    const scrollTop = scrollEl.scrollTop;
+    const scrollHeight = scrollEl.scrollHeight;
+    const clientHeight = scrollEl.clientHeight;
+    const denom = scrollHeight - clientHeight;
+    const progress = denom > 0 ? scrollTop / denom : 0;
+    const scrollProgress = Math.min(100, parseFloat((progress * 100).toFixed(1)));
 
-    const totalText = editor.getValue();
-    const charsTotal = totalText.replace(/\s/g, '').length;
-    const progress = scrollTop / (scrollHeight - clientHeight);
-	const estimatedReadPosition = Math.floor(totalText.length * progress);
-	const textBelowScroll = totalText.slice(estimatedReadPosition);
+    // getViewData() works in both source and preview modes
+    const totalText =
+      typeof mdView.getViewData === "function"
+        ? mdView.getViewData()
+        : mdView.editor
+        ? mdView.editor.getValue()
+        : "";
+    const estimatedReadPosition = Math.floor(totalText.length * progress);
+    const textBelowScroll = totalText.slice(estimatedReadPosition);
 
     const result = readingTimeText(textBelowScroll, this);
 
-    // Just time and percents
     let statusText = `${result}`;
     if (this.settings.showProgressPercentage) {
       statusText += ` (${scrollProgress}%)`;
@@ -121,10 +131,10 @@ export default class ReadingTime extends Plugin {
 }
 
 class ReadingTimeModal extends Modal {
-  plugin: ReadingTime;
+  plugin: ReadingProgress;
   editor: Editor;
 
-  constructor(app: App, editor: Editor, plugin: ReadingTime) {
+  constructor(app: App, editor: Editor, plugin: ReadingProgress) {
     super(app);
     this.editor = editor;
     this.plugin = plugin;
@@ -132,7 +142,7 @@ class ReadingTimeModal extends Modal {
 
   onOpen() {
     const { contentEl, titleEl } = this;
-    titleEl.setText("Remaining reading time");
+    titleEl.setText("Reading time");
     const stats = readingTimeText(this.editor.getSelection(), this.plugin);
     contentEl.setText(`${stats} (at ${this.plugin.settings.readingSpeed} wpm)`);
   }

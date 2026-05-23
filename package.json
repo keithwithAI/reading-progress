@@ -1,8 +1,8 @@
 {
-	"name": "remaining-reading-time",
-	"author": "ununnamed",
-	"version": "1.3",
-	"description": "Shows the remaining reading time for the current note depending on the cursor position.",
+	"name": "reading-progress",
+	"author": "keithwithai",
+	"version": "0.1.0",
+	"description": "Shows remaining reading time and scroll progress for the current note in both edit and reading modes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -10,7 +10,9 @@
 		"lint": "eslint src/"
 	},
 	"keywords": [
-		"obsidian-md"
+		"obsidian-md",
+		"reading-time",
+		"reading-progress"
 	],
 	"license": "MIT",
 	"devDependencies": {

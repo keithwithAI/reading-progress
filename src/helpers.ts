@@ -1,8 +1,8 @@
 import PrettyMilliseconds from "pretty-ms";
-import ReadingTime from "./main";
+import ReadingProgress from "./main";
 import { ReadingTimeFormat } from "./settings";
 
-export function readingTimeText(text: string, plugin: ReadingTime) {
+export function readingTimeText(text: string, plugin: ReadingProgress) {
   // подсчёт символов (по умолчанию JS .length — количество UTF-16 code units)
   const charCount = text.replace(/[\s\p{P}]+/gu, "").length;
 
