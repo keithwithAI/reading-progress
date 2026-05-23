@@ -14,6 +14,8 @@ export interface ReadingTimeSettings {
   format: ReadingTimeFormat;
   appendText: string;
   showProgressPercentage: boolean;
+  showOnMobile: boolean;
+  hideOtherStatusBarItemsOnMobile: boolean;
 }
 
 export const RT_DEFAULT_SETTINGS: ReadingTimeSettings = {
@@ -21,6 +23,8 @@ export const RT_DEFAULT_SETTINGS: ReadingTimeSettings = {
   format: ReadingTimeFormat.Default,
   appendText: "left",
   showProgressPercentage: true,
+  showOnMobile: true,
+  hideOtherStatusBarItemsOnMobile: true,
 };
 
 export class ReadingTimeSettingsTab extends PluginSettingTab {
@@ -98,6 +102,36 @@ export class ReadingTimeSettingsTab extends PluginSettingTab {
             await this.plugin
               .saveSettings()
               .then(this.plugin.calculateReadingTime);
+          })
+      );
+
+    new Setting(this.containerEl)
+      .setName("Show on mobile")
+      .setDesc(
+        "Obsidian hides the status bar on mobile by default. Turn this on to show the reading progress pill at the bottom of the screen."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showOnMobile)
+          .onChange(async (value) => {
+            this.plugin.settings.showOnMobile = value;
+            await this.plugin.saveSettings();
+            this.plugin.applyMobileClasses();
+          })
+      );
+
+    new Setting(this.containerEl)
+      .setName("Hide other status bar items on mobile")
+      .setDesc(
+        "When the mobile pill is visible, hide other status bar items (backlinks, properties, word count, etc.) so only the reading time shows. Has no effect when 'Show on mobile' is off."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.hideOtherStatusBarItemsOnMobile)
+          .onChange(async (value) => {
+            this.plugin.settings.hideOtherStatusBarItemsOnMobile = value;
+            await this.plugin.saveSettings();
+            this.plugin.applyMobileClasses();
           })
       );
   }

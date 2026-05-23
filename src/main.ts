@@ -17,6 +17,8 @@ export default class ReadingProgress extends Plugin {
     this.statusBar.addClass("plugin-reading-progress");
     this.statusBar.setText("");
 
+    this.applyMobileClasses();
+
     this.addSettingTab(new ReadingTimeSettingsTab(this.app, this));
 
     this.addCommand({
@@ -116,6 +118,22 @@ export default class ReadingProgress extends Plugin {
 
     this.statusBar.setText(statusText);
   };
+
+  applyMobileClasses() {
+    document.body.toggleClass(
+      "reading-progress-mobile-visible",
+      this.settings.showOnMobile
+    );
+    document.body.toggleClass(
+      "reading-progress-mobile-hide-others",
+      this.settings.showOnMobile && this.settings.hideOtherStatusBarItemsOnMobile
+    );
+  }
+
+  onunload() {
+    document.body.removeClass("reading-progress-mobile-visible");
+    document.body.removeClass("reading-progress-mobile-hide-others");
+  }
 
   async loadSettings() {
     this.settings = Object.assign(

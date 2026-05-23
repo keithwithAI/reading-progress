@@ -198,7 +198,9 @@ var RT_DEFAULT_SETTINGS = {
   readingSpeed: 300,
   format: "default" /* Default */,
   appendText: "left",
-  showProgressPercentage: true
+  showProgressPercentage: true,
+  showOnMobile: true,
+  hideOtherStatusBarItemsOnMobile: true
 };
 var ReadingTimeSettingsTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
@@ -233,6 +235,24 @@ var ReadingTimeSettingsTab = class extends import_obsidian.PluginSettingTab {
       (toggle) => toggle.setValue(this.plugin.settings.showProgressPercentage).onChange((value) => __async(this, null, function* () {
         this.plugin.settings.showProgressPercentage = value;
         yield this.plugin.saveSettings().then(this.plugin.calculateReadingTime);
+      }))
+    );
+    new import_obsidian.Setting(this.containerEl).setName("Show on mobile").setDesc(
+      "Obsidian hides the status bar on mobile by default. Turn this on to show the reading progress pill at the bottom of the screen."
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.showOnMobile).onChange((value) => __async(this, null, function* () {
+        this.plugin.settings.showOnMobile = value;
+        yield this.plugin.saveSettings();
+        this.plugin.applyMobileClasses();
+      }))
+    );
+    new import_obsidian.Setting(this.containerEl).setName("Hide other status bar items on mobile").setDesc(
+      "When the mobile pill is visible, hide other status bar items (backlinks, properties, word count, etc.) so only the reading time shows. Has no effect when 'Show on mobile' is off."
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.hideOtherStatusBarItemsOnMobile).onChange((value) => __async(this, null, function* () {
+        this.plugin.settings.hideOtherStatusBarItemsOnMobile = value;
+        yield this.plugin.saveSettings();
+        this.plugin.applyMobileClasses();
       }))
     );
   }
@@ -313,6 +333,7 @@ var ReadingProgress = class extends import_obsidian2.Plugin {
       this.statusBar = this.addStatusBarItem();
       this.statusBar.addClass("plugin-reading-progress");
       this.statusBar.setText("");
+      this.applyMobileClasses();
       this.addSettingTab(new ReadingTimeSettingsTab(this.app, this));
       this.addCommand({
         id: "reading-time-editor",
@@ -361,6 +382,20 @@ var ReadingProgress = class extends import_obsidian2.Plugin {
       return (_a = mdView.contentEl.querySelector(".markdown-preview-view")) != null ? _a : mdView.contentEl;
     }
     return (_c = (_b = mdView.contentEl.querySelector(".cm-scroller")) != null ? _b : mdView.contentEl.querySelector(".markdown-source-view")) != null ? _c : mdView.contentEl;
+  }
+  applyMobileClasses() {
+    document.body.toggleClass(
+      "reading-progress-mobile-visible",
+      this.settings.showOnMobile
+    );
+    document.body.toggleClass(
+      "reading-progress-mobile-hide-others",
+      this.settings.showOnMobile && this.settings.hideOtherStatusBarItemsOnMobile
+    );
+  }
+  onunload() {
+    document.body.removeClass("reading-progress-mobile-visible");
+    document.body.removeClass("reading-progress-mobile-hide-others");
   }
   loadSettings() {
     return __async(this, null, function* () {
