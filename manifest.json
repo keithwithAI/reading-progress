@@ -2,7 +2,7 @@
 	"id": "note-reading-progress",
 	"name": "Note Reading Progress",
 	"description": "Shows remaining reading time and scroll progress for the current note in both edit and reading modes.",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"minAppVersion": "0.12.17",
 	"isDesktopOnly": false,
 	"author": "keithwithai",
