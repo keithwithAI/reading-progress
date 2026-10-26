@@ -1,13 +1,14 @@
 /*
- * Note Reading Progress — mobile status bar styling.
+ * Note Reading Progress: mobile pill and chips.
  *
- * The plugin toggles the body classes below based on user settings:
- *   - reading-progress-mobile-visible       → show the pill on mobile
- *   - reading-progress-mobile-hide-others   → hide other status bar items
+ * The plugin toggles these body classes:
+ *   - reading-progress-mobile-visible       show the pill on mobile
+ *   - reading-progress-mobile-hide-others   hide other status bar items
+ *   - reading-progress-no-note              no note is open
  *
- * Desktop is unaffected; all rules are scoped to .is-mobile.
- * Selectors use enough specificity (body + multiple classes) to override
- * Obsidian's default mobile status-bar hiding without relying on !important.
+ * Desktop is unaffected except for the chip. Selectors repeat the
+ * .is-focused variant because Obsidian's own mobile rules use it.
+ * The safe-area inset keeps everything clear of the home indicator.
  */
 
 body.reading-progress-mobile-visible.is-mobile .app-container .status-bar,
@@ -15,7 +16,7 @@ body.reading-progress-mobile-visible.is-mobile.is-focused .app-container .status
     display: flex;
     visibility: visible;
     opacity: 1;
-    bottom: 32px;
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
     right: 16px;
     left: auto;
     justify-content: flex-end;
@@ -33,6 +34,14 @@ body.reading-progress-mobile-visible.is-mobile.is-focused .app-container .status
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* iPhone: sit above Reading Highlighter's centered bottom bar
+   (bottom 30px, 54px tall with the toolbar docked) and Obsidian's floating nav bar,
+   which the pill would overlap on a narrow screen. 30 + 54 + 12px gap. */
+body.reading-progress-mobile-visible.is-mobile.is-phone .app-container .status-bar,
+body.reading-progress-mobile-visible.is-mobile.is-phone.is-focused .app-container .status-bar {
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
 body.reading-progress-mobile-visible.is-mobile .app-container .status-bar > .status-bar-item.plugin-reading-progress {
     display: flex;
     padding: 0;
@@ -42,4 +51,44 @@ body.reading-progress-mobile-visible.is-mobile .app-container .status-bar > .sta
 
 body.reading-progress-mobile-hide-others.is-mobile .app-container .status-bar > .status-bar-item:not(.plugin-reading-progress) {
     display: none;
+}
+
+/* No note open: don't leave an empty capsule behind. */
+body.reading-progress-no-note.reading-progress-mobile-hide-others.is-mobile .app-container .status-bar,
+body.reading-progress-no-note.reading-progress-mobile-hide-others.is-mobile.is-focused .app-container .status-bar {
+    display: none;
+}
+
+/* Resume / Back chip: bottom right, above the status bar on desktop
+   and just above the pill on mobile. */
+button.reading-progress-chip {
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 40px;
+    z-index: var(--layer-popover, 1000);
+    align-items: center;
+    padding: 6px 14px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 999px;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+}
+
+.reading-progress-chip.is-visible {
+    display: flex;
+}
+
+/* Pill bottom + pill height (about 27px) + 8px gap. */
+.is-mobile .reading-progress-chip {
+    min-height: 44px;
+    bottom: calc(67px + env(safe-area-inset-bottom, 0px));
+}
+
+.is-mobile.is-phone .reading-progress-chip {
+    bottom: calc(131px + env(safe-area-inset-bottom, 0px));
 }

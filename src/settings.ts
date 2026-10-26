@@ -1,31 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import ReadingProgress from "./main";
-
-export enum ReadingTimeFormat {
-  Default = "default",
-  Compact = "compact",
-  Simple = "simple",
-  Verbose = "verbose",
-  Digital = "digital",
-}
-
-export interface ReadingTimeSettings {
-  readingSpeed: number;
-  format: ReadingTimeFormat;
-  appendText: string;
-  showProgressPercentage: boolean;
-  showOnMobile: boolean;
-  hideOtherStatusBarItemsOnMobile: boolean;
-}
-
-export const RT_DEFAULT_SETTINGS: ReadingTimeSettings = {
-  readingSpeed: 300,
-  format: ReadingTimeFormat.Default,
-  appendText: "left",
-  showProgressPercentage: true,
-  showOnMobile: true,
-  hideOtherStatusBarItemsOnMobile: true,
-};
+import { CPM_RANGE, DEFAULT_SETTINGS, WPM_RANGE } from "./data";
+import { parseSpeed } from "./format";
+import type ReadingProgress from "./main";
 
 export class ReadingTimeSettingsTab extends PluginSettingTab {
   plugin: ReadingProgress;
@@ -37,102 +13,69 @@ export class ReadingTimeSettingsTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
+    const settings = this.plugin.settings;
     containerEl.empty();
 
     new Setting(containerEl)
       .setName("Reading speed")
-      .setDesc("Words per minute used for reading speed (default: 200).")
-      .addText((text) => {
-        text
-          .setPlaceholder("Example: 200")
-          .setValue(this.plugin.settings.readingSpeed.toString())
-          .onChange(async (value) => {
-            this.plugin.settings.readingSpeed = parseInt(value.trim());
-            await this.plugin
-              .saveSettings()
-              .then(this.plugin.calculateReadingTime);
-          });
-      });
-
-    new Setting(this.containerEl)
-      .setName("Format")
-      .setDesc("Choose the output format")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption(ReadingTimeFormat.Default, "Default (10m)")
-          .addOption(ReadingTimeFormat.Compact, "Compact (10 min)")
-          .addOption(ReadingTimeFormat.Simple, "Simple (10m 4s)")
-          .addOption(
-            ReadingTimeFormat.Verbose,
-            "Verbose (10 minutes 4 seconds)"
-          )
-          .addOption(ReadingTimeFormat.Digital, "Colon notation (10:04)")
-          .setValue(this.plugin.settings.format)
-          .onChange(async (value) => {
-            this.plugin.settings.format = value as ReadingTimeFormat;
-            await this.plugin
-              .saveSettings()
-              .then(this.plugin.calculateReadingTime);
-          })
-      );
-
-    new Setting(this.containerEl)
-      .setName("Append text")
-      .setDesc("Append 'left' to formatted string.")
+      .setDesc(`Words per minute (default: ${DEFAULT_SETTINGS.readingSpeed}).`)
       .addText((text) =>
-        text
-          .setValue(this.plugin.settings.appendText)
-          .onChange(async (value) => {
-            this.plugin.settings.appendText = value.trim();
-            await this.plugin
-              .saveSettings()
-              .then(this.plugin.calculateReadingTime);
-          })
+        text.setValue(String(settings.readingSpeed)).onChange(async (value) => {
+          const speed = parseSpeed(value, ...WPM_RANGE);
+          if (speed === null) return;
+          settings.readingSpeed = speed;
+          await this.plugin.saveSettings();
+          this.plugin.refresh();
+        })
       );
 
-    new Setting(this.containerEl)
-      .setName("Show reading progress percentage")
-      .setDesc("Display percentage of text read")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showProgressPercentage)
-          .onChange(async (value) => {
-            this.plugin.settings.showProgressPercentage = value;
-            await this.plugin
-              .saveSettings()
-              .then(this.plugin.calculateReadingTime);
-          })
+    new Setting(containerEl)
+      .setName("Chinese speed")
+      .setDesc(`Chinese and Japanese characters per minute (default: ${DEFAULT_SETTINGS.cjkSpeed}).`)
+      .addText((text) =>
+        text.setValue(String(settings.cjkSpeed)).onChange(async (value) => {
+          const speed = parseSpeed(value, ...CPM_RANGE);
+          if (speed === null) return;
+          settings.cjkSpeed = speed;
+          await this.plugin.saveSettings();
+          this.plugin.refresh();
+        })
       );
 
-    new Setting(this.containerEl)
+    new Setting(containerEl)
       .setName("Show on mobile")
       .setDesc(
         "Obsidian hides the status bar on mobile by default. Turn this on to show the reading progress pill at the bottom of the screen."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showOnMobile)
-          .onChange(async (value) => {
-            this.plugin.settings.showOnMobile = value;
-            await this.plugin.saveSettings();
-            this.plugin.applyMobileClasses();
-          })
+        toggle.setValue(settings.showOnMobile).onChange(async (value) => {
+          settings.showOnMobile = value;
+          await this.plugin.saveSettings();
+          this.plugin.applyBodyClasses();
+        })
       );
 
-    new Setting(this.containerEl)
+    new Setting(containerEl)
       .setName("Hide other status bar items on mobile")
       .setDesc(
-        "When the mobile pill is visible, hide other status bar items (backlinks, properties, word count, etc.) so only the reading time shows. Has no effect when 'Show on mobile' is off."
+        "When the mobile pill is visible, hide other status bar items (backlinks, properties, word count, etc.) so only the reading time shows. Has no effect when the mobile pill is off."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.hideOtherStatusBarItemsOnMobile)
-          .onChange(async (value) => {
-            this.plugin.settings.hideOtherStatusBarItemsOnMobile = value;
-            await this.plugin.saveSettings();
-            this.plugin.applyMobileClasses();
-          })
+        toggle.setValue(settings.hideOtherStatusBarItemsOnMobile).onChange(async (value) => {
+          settings.hideOtherStatusBarItemsOnMobile = value;
+          await this.plugin.saveSettings();
+          this.plugin.applyBodyClasses();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName("Mark as read when finished")
+      .setDesc("Adds read: with today's date to the note's properties when you scroll to the end.")
+      .addToggle((toggle) =>
+        toggle.setValue(settings.markAsRead).onChange(async (value) => {
+          settings.markAsRead = value;
+          await this.plugin.saveSettings();
+        })
       );
   }
 }
