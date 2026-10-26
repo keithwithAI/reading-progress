@@ -4,10 +4,10 @@ import { DEFAULT_SETTINGS, Settings, normalizeData } from "./data";
 import { formatMinutes, formatStatus } from "./format";
 import {
   PositionMap,
-  todayStamp,
   deletePosition,
   hasPosition,
   mergePositions,
+  readValue,
   recordPosition,
   renamePosition,
   shouldOfferResume,
@@ -34,6 +34,14 @@ const JUMP_SUPPRESS_MS = 500;
  */
 const READ_INPUT_WINDOW_MS = 3000;
 const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+
+const READ_PROPERTY = "read";
+
+/** Obsidian's property type registry (internal API). */
+interface PropertyTypes {
+  getAssignedWidget(name: string): string | null | undefined;
+  setType(name: string, type: string): void;
+}
 
 interface Current {
   view: MarkdownView;
@@ -263,9 +271,14 @@ export default class ReadingProgress extends Plugin {
     }
     // Added before writing so a note whose frontmatter can't be parsed isn't retried every frame.
     this.markedRead.add(c.path);
+    // Match the type `read` already has in this vault; give it Date if it has none.
+    const types = this.propertyTypes();
+    const assigned = types?.getAssignedWidget(READ_PROPERTY) ?? null;
+    if (types && !assigned) types.setType(READ_PROPERTY, "date");
+    const value = readValue(assigned, new Date());
     this.app.fileManager
       .processFrontMatter(file, (fm: Record<string, unknown>) => {
-        if (fm.read == null || fm.read === "") fm.read = todayStamp(new Date());
+        if (fm[READ_PROPERTY] == null || fm[READ_PROPERTY] === "") fm[READ_PROPERTY] = value;
       })
       .catch((err: unknown) => console.error(`Note Reading Progress: couldn't mark ${c.path} as read`, err));
   }
@@ -385,6 +398,16 @@ export default class ReadingProgress extends Plugin {
     if (offerBack && from !== null) {
       this.chip.show("back", "Back", () => this.jumpToLine(view, from, false), BACK_CHIP_MS);
     }
+  }
+
+  private propertyTypes(): PropertyTypes | null {
+    const types = (this.app as unknown as { metadataTypeManager?: Partial<PropertyTypes> })
+      .metadataTypeManager;
+    return types &&
+      typeof types.getAssignedWidget === "function" &&
+      typeof types.setType === "function"
+      ? (types as PropertyTypes)
+      : null;
   }
 
   /** data.json changed on disk, e.g. synced from another device. */

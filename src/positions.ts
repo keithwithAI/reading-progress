@@ -80,3 +80,17 @@ export function todayStamp(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/**
+ * The value to write for `read`, matching the type the vault already gives
+ * that property: true for a checkbox, date and time for a datetime,
+ * otherwise today's date.
+ */
+export function readValue(assignedType: string | null | undefined, now: Date): string | true {
+  if (assignedType === "checkbox") return true;
+  if (assignedType === "datetime") {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${todayStamp(now)}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+  return todayStamp(now);
+}

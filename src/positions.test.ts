@@ -6,6 +6,7 @@ import {
   deletePosition,
   hasPosition,
   mergePositions,
+  readValue,
   recordPosition,
   renamePosition,
   shouldOfferResume,
@@ -107,5 +108,23 @@ describe("shouldOfferResume", () => {
 describe("todayStamp", () => {
   it("is the local date as YYYY-MM-DD", () => {
     expect(todayStamp(new Date(2026, 9, 5))).toBe("2026-10-05");
+  });
+});
+
+describe("readValue", () => {
+  const day = new Date(2026, 9, 26);
+
+  it("writes the date when read has no type yet, or a date or text type", () => {
+    expect(readValue(null, day)).toBe("2026-10-26");
+    expect(readValue("date", day)).toBe("2026-10-26");
+    expect(readValue("text", day)).toBe("2026-10-26");
+  });
+
+  it("writes true when read is a checkbox, so it matches the vault's type", () => {
+    expect(readValue("checkbox", day)).toBe(true);
+  });
+
+  it("writes date and time when read is a datetime", () => {
+    expect(readValue("datetime", new Date(2026, 9, 26, 9, 5))).toBe("2026-10-26T09:05");
   });
 });

@@ -14,7 +14,7 @@ When you open a note you read part of before, a `Resume at 43%` chip appears for
 
 After a big jump inside a note, for example following a footnote or a heading link, a `Back` chip returns you to where you were.
 
-When you scroll to the end of a note, the plugin adds `read: 2026-10-26` (today's date) to its properties. It never overwrites a `read` value that's already there, and you can turn it off in settings.
+When you scroll to the end of a note, the plugin adds `read: 2026-10-26` (today's date) to its properties. If `read` has no property type yet, the plugin sets it to Date. If you've already made `read` a checkbox, it writes `true` instead, so the value always matches the type. It never overwrites a `read` value that's already there, and you can turn it off in settings.
 
 The "Selected text" command shows the reading time of the text you have selected.
 
@@ -32,7 +32,7 @@ The "Selected text" command shows the reading time of the text you have selected
 
 Obsidian hides the status bar on mobile. This plugin shows its own item there as a pill, and hides the rest of the status bar unless you turn that setting off. The pill hides when no note is open.
 
-On iPhone the pill sits a little higher, so it clears Obsidian's navigation bar and the bottom bar of the [Reading Highlighter](https://github.com/keithwithAI/reading-highlighter) plugin. To restyle it, add a CSS snippet that targets `body.reading-progress-mobile-visible.is-mobile .app-container .status-bar`. The status bar item has the class `.plugin-reading-progress`.
+On narrow screens, like a folded iPhone, the pill sits a little higher so it clears Obsidian's navigation bar and the bottom bar of the [Reading Highlighter](https://github.com/keithwithAI/reading-highlighter) plugin. On wide screens, like an unfolded iPhone or an iPad, it sits just above the home indicator. To restyle it, add a CSS snippet that targets `body.reading-progress-mobile-visible.is-mobile .app-container .status-bar`. The status bar item has the class `.plugin-reading-progress`.
 
 ## Requirements
 

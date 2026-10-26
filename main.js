@@ -181,6 +181,15 @@ function todayStamp(d) {
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+function readValue(assignedType, now) {
+  if (assignedType === "checkbox")
+    return true;
+  if (assignedType === "datetime") {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${todayStamp(now)}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+  return todayStamp(now);
+}
 
 // src/progress.ts
 var clamp01 = (n) => Math.min(Math.max(n, 0), 1);
@@ -466,6 +475,7 @@ var INPUT_WINDOW_MS = 400;
 var JUMP_SUPPRESS_MS = 500;
 var READ_INPUT_WINDOW_MS = 3e3;
 var SCROLL_KEYS = /* @__PURE__ */ new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+var READ_PROPERTY = "read";
 var ReadingProgress = class extends import_obsidian2.Plugin {
   constructor() {
     super(...arguments);
@@ -717,15 +727,21 @@ var ReadingProgress = class extends import_obsidian2.Plugin {
   }
   /** Scrolled to the end of a note by hand: add `read: YYYY-MM-DD` once, never overwriting. */
   maybeMarkRead() {
+    var _a;
     const c = this.current;
     const file = c == null ? void 0 : c.view.file;
     if (!c || !file || !this.settings.markAsRead || !c.done || !c.scrollable || this.markedRead.has(c.path) || !this.userScrolledWithin(READ_INPUT_WINDOW_MS)) {
       return;
     }
     this.markedRead.add(c.path);
+    const types = this.propertyTypes();
+    const assigned = (_a = types == null ? void 0 : types.getAssignedWidget(READ_PROPERTY)) != null ? _a : null;
+    if (types && !assigned)
+      types.setType(READ_PROPERTY, "date");
+    const value = readValue(assigned, /* @__PURE__ */ new Date());
     this.app.fileManager.processFrontMatter(file, (fm) => {
-      if (fm.read == null || fm.read === "")
-        fm.read = todayStamp(/* @__PURE__ */ new Date());
+      if (fm[READ_PROPERTY] == null || fm[READ_PROPERTY] === "")
+        fm[READ_PROPERTY] = value;
     }).catch((err) => console.error(`Note Reading Progress: couldn't mark ${c.path} as read`, err));
   }
   indexFor(view, path) {
@@ -769,6 +785,10 @@ var ReadingProgress = class extends import_obsidian2.Plugin {
     if (offerBack && from !== null) {
       this.chip.show("back", "Back", () => this.jumpToLine(view, from, false), BACK_CHIP_MS);
     }
+  }
+  propertyTypes() {
+    const types = this.app.metadataTypeManager;
+    return types && typeof types.getAssignedWidget === "function" && typeof types.setType === "function" ? types : null;
   }
   /** data.json changed on disk, e.g. synced from another device. */
   async onExternalSettingsChange() {
